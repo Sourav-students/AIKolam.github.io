@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Kolam Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #6c5ce7;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: #636e72;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .ai-section, .gallery-section {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .canvas-container {
+            flex: 2;
+            min-width: 500px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        h2 {
+            color: #6c5ce7;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        h3 {
+            color: #6c5ce7;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3436;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .range-value {
+            text-align: center;
+            font-weight: bold;
+            color: #6c5ce7;
+            font-size: 1.2rem;
+        }
+        
+        button {
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 8px 0;
+        }
+        
+        button:hover {
+            background: #5245c5;
+            transform: translateY(-2px);
+        }
+        
+        button.ai-generate {
+            background: #fd79a8;
+            margin-top: 20px;
+        }
+        
+        button.ai-generate:hover {
+            background: #e84393;
+        }
+        
+        button.gallery-generate {
+            background: #00b894;
+            margin-top: 20px;
+        }
+        
+        button.gallery-generate:hover {
+            background: #00a085;
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .color-option.selected {
+            border: 2px solid #333;
+            transform: scale(1.2);
+        }
+        
+        #kolamCanvas {
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .ai-loading, .gallery-loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .ai-loading .spinner, .gallery-loading .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #fd79a8;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        .gallery-loading .spinner {
+            border-top: 4px solid #00b894;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .output-info {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 1.1rem;
+        }
+        
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+        
+        .gallery-item {
+            cursor: pointer;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            width: 100px;
+            height: 100px;
+            position: relative;
+        }
+        
+        .gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .gallery-item.selected {
+            border: 3px solid #00b894;
+            box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.3);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .gallery-label {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 5px;
+            font-size: 0.8rem;
+            border-radius: 3px;
+        }
+        
+        /* Selected Image Preview */
+        .selected-image-preview {
+            margin: 20px 0;
+            text-align: center;
+            display: none;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .selected-image-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            object-fit: cover;
+        }
+        
+        .preview-label {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #6c5ce7;
+            font-size: 1.1rem;
+        }
+        
+        .help-text {
+            font-size: 0.9rem;
+            color: #636e72;
+            margin-top: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #636e72;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .canvas-container {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Kolam Generator</h1>
+            <p class="subtitle">Describe your Kolam design or select from web gallery images and customize!</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="ai-section">
+                <h2>AI Search & Generate</h2>
+                
+                <div class="control-group">
+                    <label for="aiPrompt">Describe Your Kolam Design:</label>
+                    <input type="text" id="aiPrompt" placeholder="e.g., 'flower pattern with rotational symmetry'">
+                    <p class="help-text">The AI will analyze your description and create a matching Kolam</p>
+                </div>
+                
+                <div class="control-group">
+                    <label for="gridSize">Grid Size (Dots):</label>
+                    <input type="range" id="gridSize" min="3" max="21" value="7" step="2">
+                    <div class="range-value"><span id="gridSizeValue">7</span> x <span id="gridSizeValue2">7</span> dots</div>
+                    <p class="help-text">Traditional Kolams use odd-numbered grid sizes</p>
+                </div>
+                
+                <div class="control-group">
+                    <label>Select Color:</label>
+                    <div class="color-picker">
+                        <div class="color-option selected" style="background-color: #6c5ce7;" data-color="#6c5ce7"></div>
+                        <div class="color-option" style="background-color: #e84393;" data-color="#e84393"></div>
+                        <div class="color-option" style="background-color: #00b894;" data-color="#00b894"></div>
+                        <div class="color-option" style="background-color: #fd79a8;" data-color="#fd79a8"></div>
+                        <div class="color-option" style="background-color: #2d3436;" data-color="#2d3436"></div>
+                    </div>
+                </div>
+                
+                <button class="ai-generate" id="aiGenerateBtn">Generate Kolam</button>
+                
+                <div class="ai-loading" id="aiLoading">
+                    <div class="spinner"></div>
+                    <p>AI is analyzing your description and generating a design...</p>
+                </div>
+            </div>
+
+            <!-- Gallery Section with Web Images, Preview, and Controls -->
+            <div class="gallery-section">
+                <h2>Gallery Selection (Web Images)</h2>
+                
+                <div class="control-group">
+                    <p class="help-text">1. Click on one image from the web gallery below.<br>2. View the selected image preview below.<br>3. Adjust grid size and color.<br>4. Click Generate to create customized Kolam!</p>
+                </div>
+                
+                <div class="gallery">
+                    <!-- Pre-existing web sample images (using placeholders representing Kolam designs; replace with actual URLs if needed) -->
+                    <div class="gallery-item selected" data-pattern="flower" data-symmetry="rotational" data-image="https://via.placeholder.com/300x300/FF6B6B/FFFFFF?text=Flower+Kolam">
+                        <img src="https://th.bing.com/th/id/OIP.y_bc8OkdtaXXIc1jR09RfgHaGc?w=197&h=180&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" alt="Floral Kolam">
+                        <div class="gallery-label">Flower</div>
+                    </div>
+                    <div class="gallery-item" data-pattern="star" data-symmetry="rotational" data-image="https://via.placeholder.com/300x300/4ECDC4/FFFFFF?text=Star+Kolam">
+                        <img src="https://kolamsofindia.com/wp-content/uploads/2018/04/star-kolam.jpg" alt="Star Kolam">
+                        <div class="gallery-label">Star</div>
+                    </div>
+                    <div class="gallery-item" data-pattern="spiral" data-symmetry="mirror" data-image="https://via.placeholder.com/300x300/45B7D1/FFFFFF?text=Spiral+Kolam">
+                        <img src="https://tse4.mm.bing.net/th/id/OIP.47hIGsF2xwcLqFskGdqKAgHaG-?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Spiral Kolam">
+                        <div class="gallery-label">Spiral</div>
+                    </div>
+                    <div class="gallery-item" data-pattern="geometric" data-symmetry="none" data-image="https://via.placeholder.com/300x300/96CEB4/FFFFFF?text=Geometric+Kolam">
+                        <img src="https://tse3.mm.bing.net/th/id/OIP.NccepB-p0bE3KyXGQmYY1wHaG7?w=1024&h=958&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Geometric Kolam">
+                        <div class="gallery-label">Geometric</div>
+                    </div>
+                    <div class="gallery-item" data-pattern="complex" data-symmetry="rotational" data-image="https://via.placeholder.com/300x300/FECA57/FFFFFF?text=Complex+Kolam">
+                        <img src="https://th.bing.com/th/id/R.02f6177e62c98bcd9ef4b4f7bcb40189?rik=GpH2czvJWPcjbA&riu=http%3a%2f%2fwebneel.com%2fdaily%2fsites%2fdefault%2ffiles%2fimages%2fdaily%2f08-2014%2f15-kolam.jpg&ehk=2ugbcBKWlQEevajRj9OjV44auXn7Fj%2flZVJqP4Hh18U%3d&risl=&pid=ImgRaw&r=0" alt="Complex Kolam">
+                        <div class="gallery-label">Complex</div>
+                    </div>
+                </div>
+                
+                <!-- Selected Image Preview Below Gallery -->
+                <div class="selected-image-preview" id="selectedImagePreview">
+                    <h3>Selected Image Preview</h3>
+                    <img id="previewImg" src="" alt="Selected Web Image">
+                    <div class="preview-label" id="previewLabel">Flower Pattern</div>
+                </div>
+                
+                <!-- Independent Grid Size for Gallery -->
+                <div class="control-group">
+                    <label for="galleryGridSize">Grid Size (Dots) for Gallery:</label>
+                    <input type="range" id="galleryGridSize" min="3" max="21" value="7" step="2">
+                    <div class="range-value"><span id="galleryGridSizeValue">7</span> x <span id="galleryGridSizeValue2">7</span> dots</div>
+                    <p class="help-text">Adjust grid size for the selected web image</p>
+                </div>
+                
+                <!-- Independent Color Picker for Gallery -->
+                <div class="control-group">
+                    <label>Select Color for Gallery:</label>
+                    <div class="color-picker" id="galleryColorPicker">
+                        <div class="color-option selected" style="background-color: #6c5ce7;" data-color="#6c5ce7"></div>
+                        <div class="color-option" style="background-color: #e84393;" data-color="#e84393"></div>
+                        <div class="color-option" style="background-color: #00b894;" data-color="#00b894"></div>
+                        <div class="color-option" style="background-color: #fd79a8;" data-color="#fd79a8"></div>
+                        <div class="color-option" style="background-color: #2d3436;" data-color="#2d3436"></div>
+                    </div>
+                    <p class="help-text">Choose color for the selected web image</p>
+                </div>
+                
+                <button class="gallery-generate" id="galleryGenerateBtn">Generate from Selected Web Image</button>
+                
+                <div class="gallery-loading" id="galleryLoading">
+                    <div class="spinner"></div>
+                    <p>Generating customized Kolam from selected web image...</p>
+                </div>
+            </div>
+            
+            <div class="canvas-container">
+                <h2>Your Generated Kolam</h2>
+                <canvas id="kolamCanvas" width="500" height="500"></canvas>
+                <div class="output-info">
+                    <p>Grid: <span id="currentGrid">7x7</span> | Pattern: <span id="currentPattern">Waiting for input...</span></p>
+                </div>
+                <button id="downloadBtn">Download as PNG</button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>AI Kolam Generator &copy; 2023
